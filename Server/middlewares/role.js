@@ -1,16 +1,16 @@
-const permit = (...allowed) => {
-    return (req, res, next) => {
-      if (!req.user) {
-        return res.status(401).json({ message: "User not authenticated" });
-      }
-  
-      if (allowed.includes(req.user.role)) {
-        next();
-      } else {
-        return res.status(403).json({ message: "Forbidden" });
-      }
-    };
+const checkPermission = (permission) => {
+  return (req, res, next) => {
+    const permissions = req.user.permissions;
+
+    if (
+      permissions.includes('*') ||
+      permissions.includes(permission)
+    ) {
+      return next();
+    }
+
+    return res.status(403).json({ message: 'Access Denied' });
   };
-  
-  module.exports = permit;
-  
+};
+
+  module.export =checkPermission;

@@ -20,7 +20,7 @@ interface RegisterPayload extends LoginPayload {
   role: string;
 }
 const loginApi = (payload: LoginPayload) =>
-  api.post('/api/auth/login', payload).then(res => res.data);
+  api.post('/api/auth/login', payload).then(res =>res.data);
 
 const registerApi = (payload: RegisterPayload) =>
   api.post('/api/auth/register', payload).then(res => res.data);
@@ -31,7 +31,9 @@ function* loginSaga(
   action: ReturnType<typeof loginRequest>
 ): Generator<CallEffect | PutEffect, void, any> {
   try {
+    console.log('LOGIN PAYLOAD:', action.payload);
     const data: any = yield call(loginApi, action.payload);
+    console.log('LOGIN RESPONSE:', data); 
     yield put(loginSuccess(data));
   } catch (err: any) {
     yield put(loginFailure(err.response?.data?.message || err.message));
@@ -43,14 +45,15 @@ function* registerSaga(
   action: ReturnType<typeof registerRequest>
 ): Generator<any, void, any> {
   try {
-    yield call(registerApi, action.payload);
-    yield put(registerSuccess());
+    const data: any = yield call(registerApi, action.payload);
+    yield put(registerSuccess(data.message));
   } catch (err: any) {
     yield put(
       registerFailure(err.response?.data?.message || err.message)
     );
   }
 }
+
 
 export default function* authSaga(): Generator {
   yield takeLatest(loginRequest.type, loginSaga);

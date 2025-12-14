@@ -10,13 +10,13 @@ const userSchema=new mongoose.Schema({
         type:String,
         required:true,  
     },
-    role:{
-        type:String,
-        enum:['admin','buyer','seller'],
-        default:'buyer',
-    },
+    role: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Role',
+        required: true
+      },
 });
 
-const User=mongoose.model('User',userSchema);
+const Custom=mongoose.model('Custom',userSchema);
 
-module.exports=User;
+module.exports=Custom;

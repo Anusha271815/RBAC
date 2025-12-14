@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { registerRequest } from '@/store/authSlice';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerRequest, clearMessage } from '@/store/authSlice';
 
 const Register = () => {
   const dispatch = useDispatch();
@@ -11,9 +11,23 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('buyer');
 
+  const { successMessage, error, loading } = useSelector(
+    (state: any) => state.auth
+  );
+
   const submit = () => {
-    dispatch(registerRequest({email, password, role }));
+    dispatch(registerRequest({ email, password, role }));
   };
+
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        dispatch(clearMessage());
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage, dispatch]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-200">
@@ -24,6 +38,7 @@ const Register = () => {
         </h1>
 
         <input
+        suppressHydrationWarning
           type="email"
           placeholder="abc@gmail.com"
           value={email}
@@ -48,10 +63,29 @@ const Register = () => {
           <option value="seller">Seller</option>
           <option value="admin">Admin</option>
         </select>
+        
+        {loading && (
+          <p className="text-center text-blue-500 text-sm">
+            Registering...
+          </p>
+        )}
+
+        {successMessage && (
+          <p className="text-center text-green-600 text-sm font-medium">
+            {successMessage}
+          </p>
+        )}
+
+        {error && (
+          <p className="text-center text-red-500 text-sm">
+            {error}
+          </p>
+        )}
 
         <button
           className="bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 transition"
           onClick={submit}
+          disabled={loading}
         >
           Register
         </button>

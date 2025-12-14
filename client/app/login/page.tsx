@@ -7,8 +7,8 @@ import { useDispatch, useSelector } from 'react-redux';
 const login = () => {
     const dispatch=useDispatch();
 
-    const[email,setEmail]=useState("");
-    const[password,setPassword]=useState("");
+    const[email,setEmail]=useState('');
+    const[password,setPassword]=useState('');
 
     function submit(){
         dispatch(loginRequest({email,password}));
@@ -23,6 +23,7 @@ const login = () => {
     </h1>
 
     <input
+     suppressHydrationWarning
       type="text"
       placeholder="abc@gmail.com"
       value={email}
@@ -40,7 +41,7 @@ const login = () => {
 
     <button
       className="bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200"
-      onSubmit={submit}
+      onClick={submit}
     >
       Login
     </button>

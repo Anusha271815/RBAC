@@ -1,5 +1,18 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+const parseJSON = (key: string) => {
+  if (typeof window === 'undefined') return null;
+  const value = localStorage.getItem(key);
+  if (!value) return null;
+  try {
+    return JSON.parse(value);
+  } catch {
+    console.warn(`Invalid JSON in localStorage for key "${key}", clearing it`);
+    localStorage.removeItem(key);
+    return null;
+  }
+};
+
 interface LoginPayload {
   email: string;
   password: string;
@@ -7,7 +20,7 @@ interface LoginPayload {
 
 interface LoginSuccessPayload {
   token: string;
-  user: any; 
+  user: any;
 }
 
 interface RegisterPayload extends LoginPayload {
@@ -16,22 +29,20 @@ interface RegisterPayload extends LoginPayload {
 
 interface AuthState {
   token: string | null;
-  user: any | null; 
+  user: any | null;
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+  successMessage: string | null;
 }
 
 const initialState: AuthState = {
   token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
-  user:
-    typeof window !== 'undefined' && localStorage.getItem('user')
-      ? JSON.parse(localStorage.getItem('user')!)
-      : null,
-  isAuthenticated:
-    typeof window !== 'undefined' ? !!localStorage.getItem('token') : false,
+  user: parseJSON('user'),
+  isAuthenticated: !!parseJSON('user') && !!localStorage.getItem('token'),
   loading: false,
   error: null,
+  successMessage: null,
 };
 
 const authSlice = createSlice({
@@ -62,21 +73,26 @@ const authSlice = createSlice({
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     },
-
     registerRequest(state, action: PayloadAction<RegisterPayload>) {
       state.loading = true;
       state.error = null;
+      state.successMessage = null;
     },
-    registerSuccess(state) {
+    registerSuccess(state, action: PayloadAction<string>) {
       state.loading = false;
+      state.successMessage = action.payload;
     },
     registerFailure(state, action: PayloadAction<string>) {
       state.loading = false;
       state.error = action.payload;
+      state.successMessage = null;
+    },
+    clearMessage(state) {
+      state.successMessage = null;
+      state.error = null;
     },
   },
 });
-
 export const {
   loginRequest,
   loginSuccess,
@@ -85,6 +101,7 @@ export const {
   registerRequest,
   registerSuccess,
   registerFailure,
+  clearMessage,
 } = authSlice.actions;
 
 export default authSlice.reducer;

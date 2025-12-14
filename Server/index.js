@@ -1,24 +1,21 @@
 const express=require('express');
 const app=express();
 const mongoose=require('mongoose');
-const router = require('./modules/route');
 require('dotenv').config();
+const cors = require('cors');  
+const connectDB=require('./config/db')
+
+const router = require('./modules/route');
+app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  }));
 
 app.use(express.json());
 app.use('/api/auth', router);
 
-async function connectDB(){
-    try{
-        const connectionDb=await mongoose.connect(process.env.db_url);
-        console.log("MongoDB connected: " + connectionDb.connection.host);
-    }catch(err){
-        console.error("Error connecting to MongoDB: ", err);
-        process.exit(1);
-    };
-}
-connectDB();
 
 
-app.listen(process.env.port,()=>{
+app.listen(process.env.PORT,()=>{
     console.log(`Server is running on port ${process.env.port}`);
 })
