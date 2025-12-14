@@ -42,8 +42,13 @@ async function loginUser(req,res){
             role: user.role.name,
             permissions: user.role.permissions
           };
-        const token=jwt.sign(payload,process.env.jwt_secret,{expiresIn:'1h'});
-        res.status(200).json({message:"Login successful",token:token});
+        const token=jwt.sign(payload,process.env.jwt_secret,{expiresIn:'3h'});
+        res.status(200).json({
+            message: "Login successful",
+            token,
+            user: user,
+          });
+      
     }
     catch(err){
         res.status(500).json({message:"Error logging in",error:err.message});

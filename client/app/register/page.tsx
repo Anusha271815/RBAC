@@ -2,20 +2,23 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useRouter } from 'next/navigation';
 import { registerRequest, clearMessage } from '@/store/authSlice';
 
 const Register = () => {
   const dispatch = useDispatch();
+  const router = useRouter();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('buyer');
+  const [role, setRole] = useState<'buyer' | 'seller' | 'admin'>('buyer');
 
   const { successMessage, error, loading } = useSelector(
     (state: any) => state.auth
   );
 
   const submit = () => {
+    if (!email || !password) return;
     dispatch(registerRequest({ email, password, role }));
   };
 
@@ -23,11 +26,12 @@ const Register = () => {
     if (successMessage) {
       const timer = setTimeout(() => {
         dispatch(clearMessage());
-      }, 3000);
+        router.push('/login');
+      }, 1500);
 
       return () => clearTimeout(timer);
     }
-  }, [successMessage, dispatch]);
+  }, [successMessage, dispatch, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-200">
@@ -56,14 +60,14 @@ const Register = () => {
 
         <select
           value={role}
-          onChange={(e) => setRole(e.target.value)}
+          onChange={(e) => setRole(e.target.value as any)}
           className="px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
         >
           <option value="buyer">Buyer</option>
           <option value="seller">Seller</option>
           <option value="admin">Admin</option>
         </select>
-        
+
         {loading && (
           <p className="text-center text-blue-500 text-sm">
             Registering...

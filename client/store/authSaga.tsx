@@ -1,7 +1,6 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
-import { CallEffect, PutEffect } from 'redux-saga/effects';
-
 import api from '../utils/api';
+
 import {
   loginRequest,
   loginSuccess,
@@ -17,26 +16,38 @@ interface LoginPayload {
 }
 
 interface RegisterPayload extends LoginPayload {
-  role: string;
+  role: 'admin' | 'buyer' | 'seller';
 }
+
 const loginApi = (payload: LoginPayload) =>
-  api.post('/api/auth/login', payload).then(res =>res.data);
+  api.post('/api/auth/login', payload).then(res => res.data);
 
 const registerApi = (payload: RegisterPayload) =>
   api.post('/api/auth/register', payload).then(res => res.data);
 
-
-
 function* loginSaga(
   action: ReturnType<typeof loginRequest>
-): Generator<CallEffect | PutEffect, void, any> {
+): Generator<any, void, any> {
   try {
-    console.log('LOGIN PAYLOAD:', action.payload);
-    const data: any = yield call(loginApi, action.payload);
-    console.log('LOGIN RESPONSE:', data); 
-    yield put(loginSuccess(data));
+    const response = yield call(loginApi, action.payload);
+
+    const normalizedUser = {
+      id: response.user._id,
+      email: response.user.email,
+      role: response.user.role.name,        
+      permissions: response.user.role.permissions,
+    };
+
+    yield put(
+      loginSuccess({
+        token: response.token,
+        user: normalizedUser,
+      })
+    );
   } catch (err: any) {
-    yield put(loginFailure(err.response?.data?.message || err.message));
+    yield put(
+      loginFailure(err.response?.data?.message || err.message)
+    );
   }
 }
 
@@ -45,15 +56,16 @@ function* registerSaga(
   action: ReturnType<typeof registerRequest>
 ): Generator<any, void, any> {
   try {
-    const data: any = yield call(registerApi, action.payload);
-    yield put(registerSuccess(data.message));
+    const response = yield call(registerApi, action.payload);
+    yield put(registerSuccess(response.message));
   } catch (err: any) {
     yield put(
-      registerFailure(err.response?.data?.message || err.message)
+      registerFailure(
+        err.response?.data?.message || 'Registration failed'
+      )
     );
   }
 }
-
 
 export default function* authSaga(): Generator {
   yield takeLatest(loginRequest.type, loginSaga);

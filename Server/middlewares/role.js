@@ -13,4 +13,4 @@ const checkPermission = (permission) => {
   };
 };
 
-  module.export =checkPermission;
+  module.exports =checkPermission;
